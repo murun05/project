@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "monorepo": true,
+  "root": "apps/lifeos-api",
+  "sourceRoot": "apps/lifeos-api/src",
+  "compilerOptions": { "tsConfigPath": "apps/lifeos-api/tsconfig.app.json" },
+  "projects": {
+    "lifeos-api": { "type": "application", "root": "apps/lifeos-api", "entryFile": "main", "sourceRoot": "apps/lifeos-api/src", "compilerOptions": { "tsConfigPath": "apps/lifeos-api/tsconfig.app.json" } },
+    "lifeos-batch": { "type": "application", "root": "apps/lifeos-batch", "entryFile": "main", "sourceRoot": "apps/lifeos-batch/src", "compilerOptions": { "tsConfigPath": "apps/lifeos-batch/tsconfig.app.json" } }
+  }
+}

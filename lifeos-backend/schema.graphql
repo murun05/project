@@ -1,0 +1,266 @@
+type Member {
+  _id: ID!
+  email: String!
+  displayName: String!
+  timezone: String!
+}
+
+type AuthPayload {
+  accessToken: String!
+  member: Member!
+}
+
+type LifeRecord {
+  _id: ID!
+  type: RecordType!
+  title: String!
+  archived: Boolean!
+  done: Boolean!
+  notes: String
+  merchant: String
+  amountMinor: Float
+  currency: String
+  purchaseDate: String
+  returnBy: String
+  warrantyEnd: String
+  category: String
+  location: String
+  serial: String
+  qty: String
+  expires: String
+  opened: String
+  cycle: BillingCycle
+  renewal: String
+  remindDays: Int
+  trial: Boolean
+  trialEnd: String
+  unused: Boolean
+  docType: DocType
+  dueDate: String
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+enum RecordType {
+  PURCHASE
+  BELONGING
+  FOOD
+  SUBSCRIPTION
+  DOCUMENT
+  ERRAND
+}
+
+enum BillingCycle {
+  MONTHLY
+  YEARLY
+}
+
+enum DocType {
+  RECEIPT
+  WARRANTY
+  MANUAL
+  OTHER
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Reminder {
+  _id: ID!
+  recordId: ID!
+  kind: ReminderKind!
+  date: String!
+  done: Boolean!
+  snoozeUntil: String
+  deliveredAt: DateTime
+}
+
+enum ReminderKind {
+  RETURN
+  WARRANTY
+  EXPIRY
+  RENEWAL
+  TRIAL
+}
+
+type LinkedRecord {
+  relation: LinkRelation!
+  record: LifeRecord!
+}
+
+enum LinkRelation {
+  RECEIPT_FOR
+  BOUGHT_IN
+  CREATED_FOR
+  LINKED_TO
+}
+
+type RecordDetail {
+  record: LifeRecord!
+  linked: [LinkedRecord!]!
+  reminders: [Reminder!]!
+}
+
+type ActionItem {
+  recordId: ID!
+  reminderId: ID
+  title: String!
+  recordType: RecordType!
+  source: ActionSource!
+  kind: ReminderKind
+  date: String!
+  daysUntil: Int!
+  urgent: Boolean!
+  chargeMinor: Float
+  currency: String
+}
+
+enum ActionSource {
+  REMINDER
+  ERRAND
+}
+
+type ReminderResult {
+  message: String!
+  record: LifeRecord
+}
+
+type ErrandResult {
+  errand: LifeRecord!
+  suggestedReminderId: ID
+}
+
+type OwnedMatch {
+  recordId: ID!
+  title: String!
+  recordType: RecordType!
+  message: String!
+}
+
+type ShoppingItem {
+  _id: ID!
+  text: String!
+  done: Boolean!
+  matches: [OwnedMatch!]!
+}
+
+type CurrencySummary {
+  currency: String!
+  monthlyMinor: Float!
+  yearlyMinor: Float!
+  unusedYearlyMinor: Float!
+}
+
+type SubscriptionSummary {
+  perCurrency: [CurrencySummary!]!
+  activeTrials: Int!
+}
+
+type Query {
+  me: Member!
+  records(filter: RecordsFilterInput): [LifeRecord!]!
+  recordDetail(id: ID!): RecordDetail!
+  subscriptionSummary: SubscriptionSummary!
+  myActions: [ActionItem!]!
+  upcomingReminders(days: Int! = 60): [ActionItem!]!
+  shoppingList: [ShoppingItem!]!
+  ownershipCheck(text: String!): [OwnedMatch!]!
+}
+
+input RecordsFilterInput {
+  type: RecordType
+  search: String
+  archived: Boolean
+}
+
+type Mutation {
+  register(input: RegisterInput!): AuthPayload!
+  login(input: LoginInput!): AuthPayload!
+  setTimezone(timezone: String!): Member!
+  createRecord(input: CreateRecordInput!, options: PurchaseOptionsInput): LifeRecord!
+  updateRecord(input: UpdateRecordInput!): LifeRecord!
+  setRecordArchived(id: ID!, archived: Boolean!): LifeRecord!
+  completeReminder(id: ID!): ReminderResult!
+  snoozeReminder(id: ID!): ReminderResult!
+  snoozeErrand(id: ID!): ReminderResult!
+  createErrandFromReminder(reminderId: ID!): LifeRecord!
+  completeErrand(id: ID!, done: Boolean!): ErrandResult!
+  addShoppingItem(text: String!): ShoppingItem!
+  setShoppingItemDone(id: ID!, done: Boolean!): ShoppingItem!
+  removeShoppingItem(id: ID!): Boolean!
+}
+
+input RegisterInput {
+  email: String!
+  password: String!
+  displayName: String!
+  timezone: String
+}
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+input CreateRecordInput {
+  title: String
+  notes: String
+  merchant: String
+  amount: String
+  currency: String
+  purchaseDate: String
+  returnBy: String
+  warrantyEnd: String
+  category: String
+  location: String
+  serial: String
+  qty: String
+  expires: String
+  opened: String
+  cycle: BillingCycle
+  renewal: String
+  remindDays: Int
+  trial: Boolean
+  trialEnd: String
+  unused: Boolean
+  docType: DocType
+  dueDate: String
+  type: RecordType!
+  linkToId: ID
+}
+
+input PurchaseOptionsInput {
+  trackInStuff: Boolean
+  returnReminder: Boolean
+  warrantyReminder: Boolean
+  createReturnErrand: Boolean
+  receiptName: String
+}
+
+input UpdateRecordInput {
+  title: String
+  notes: String
+  merchant: String
+  amount: String
+  currency: String
+  purchaseDate: String
+  returnBy: String
+  warrantyEnd: String
+  category: String
+  location: String
+  serial: String
+  qty: String
+  expires: String
+  opened: String
+  cycle: BillingCycle
+  renewal: String
+  remindDays: Int
+  trial: Boolean
+  trialEnd: String
+  unused: Boolean
+  docType: DocType
+  dueDate: String
+  id: ID!
+}
